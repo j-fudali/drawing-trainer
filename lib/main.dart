@@ -1,6 +1,8 @@
+import 'package:drawing_trainer/home_page.dart';
 import 'package:flutter/material.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
@@ -12,9 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       title: 'Flutter Demo',
-      home: Scaffold(
-        body:  Center(child: Text("Hello World")),
-      )
+      home: HomePage()
     );
   }
 }
