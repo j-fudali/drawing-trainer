@@ -1,20 +1,27 @@
-import 'package:drawing_trainer/home_page.dart';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:json_theme/json_theme.dart';
 
-void main() {
+import 'app/app.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MyApp());
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  await dotenv.load();
+  final lightThemeStr = await rootBundle.loadString('assets/theme_light.json');
+  final lightThemeJson = jsonDecode(lightThemeStr);
+  final lightTheme = ThemeDecoder.decodeThemeData(lightThemeJson)!;
+  final darkThemeStr =
+      await rootBundle.loadString('assets/theme_dark.json');
+  final darkThemeJson = jsonDecode(darkThemeStr);
+  final darkTheme = ThemeDecoder.decodeThemeData(darkThemeJson)!;
+  runApp(App(lightTheme: lightTheme, darkTheme: darkTheme,));
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
 
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      title: 'Flutter Demo',
-      home: HomePage()
-    );
-  }
-}
