@@ -1,47 +1,116 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:camera/camera.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:drawing_trainer/camera/drawing_response.dart';
+import 'package:drawing_trainer/camera/drawing_result.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class DrawingPhase extends StatefulWidget {
   final String generatedObject;
-  const DrawingPhase({super.key, required this.generatedObject});
+  final Function(String object) setImagePath;
+  final Function(DrawingResponse object) setDrawingResponse;
+
+  const DrawingPhase({super.key, required this.generatedObject, required this.setImagePath, required this.setDrawingResponse});
 
   @override
   State<DrawingPhase> createState() => _DrawingPhaseState();
+
+
 }
 
-class _DrawingPhaseState extends State<DrawingPhase> {
+class _DrawingPhaseState extends State<DrawingPhase>
+    with WidgetsBindingObserver {
+  final ref =
+      FirebaseFirestore.instance.collection(dotenv.env['DB_NAME_RATE']!);
+  final storageRef = FirebaseStorage.instance.ref();
   late CameraController _cameraController;
   late Future<void> _initializeControllerFuture;
+  bool cameraInitialized = false;
+  String? imagePath;
+  String? imageName;
 
-  void _initCamera(CameraDescription cameraDescription) {
-    setState(() {
-      _cameraController =
-          CameraController(cameraDescription, ResolutionPreset.max);
-      _initializeControllerFuture = _cameraController.initialize();
-    });
+  void _makePhoto() async {
+    try {
+      await _initializeControllerFuture;
+      final image = await _cameraController.takePicture();
+      if (!mounted) return;
+      setState(() {
+        imagePath = image.path;
+        widget.setImagePath(image.path);
+        imageName = image.name;
+      });
+    } catch (e) {
+      print(e);
+    }
   }
 
-  Widget _renderCameraPreview() {
-    return FutureBuilder(
-        future: _initializeControllerFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            return Positioned.fill(
-              child: AspectRatio(
-                aspectRatio: _cameraController.value.aspectRatio,
-                child: CameraPreview(_cameraController),
-              ),
-            );
-          }
-          return const Center(child: CircularProgressIndicator());
-        });
+  void _acceptImage() async {
+    try {
+      final imagesRef = storageRef.child("images/${widget.generatedObject + DateTime.now().microsecond.toString()}.jpg");
+      var gsFile = await imagesRef.putFile(File(imagePath!), SettableMetadata(contentType: 'image/jpeg'));
+      final fileUrl = dotenv.env["IMAGES_STORAGE"]! + gsFile.ref.fullPath;
+      final prompt = 'Return JSON object where: "isValid" contains true or false, if image shows a drawing of ${widget.generatedObject}, "rate" containing rate from 0 to 100 of quality of drawing, "tips" containing array of up to 3 tips that author of drawing can improve in this drawing. Example of returned object: {"isValid":true, "rate": 60, "tips": ["text...", "text...", "text.."]}.';
+      final docRef = await ref.add({"prompt": prompt, "image": fileUrl});
+      docRef.snapshots().listen((event) {
+        var output = event.data()!['output'] as String?;
+        if (output != null) {
+          final response = output.substring(8, output.length - 3);
+          final drawingResponseMap = jsonDecode(response) as Map<String, dynamic>;
+          final drawingResponse = DrawingResponse.fromJson(drawingResponseMap);
+          widget.setDrawingResponse(drawingResponse);
+        }
+      });
+    } on FirebaseException catch (e) {
+      print(e);
+    }
   }
 
   @override
-  void dispose() {
-    _cameraController.dispose();
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // App state changed before we got the chance to initialize.
+    if (!_cameraController.value.isInitialized) {
+      return;
+    }
+
+    if (state == AppLifecycleState.inactive) {
+      _cameraController.dispose();
+    } else if (state == AppLifecycleState.resumed) {
+      _initCamera(_cameraController.description);
+    }
+  }
+
+  void _initCamera(CameraDescription cameraDescription) async {
+    _cameraController =
+        CameraController(cameraDescription, ResolutionPreset.max);
+    _initializeControllerFuture = _cameraController.initialize();
+    await _initializeControllerFuture;
+    await _cameraController.setFlashMode(FlashMode.off);
+    if (mounted) {
+      setState(() => cameraInitialized = true);
+    }
+  }
+
+  Widget _renderCameraPreview() {
+    if (cameraInitialized) {
+      return Positioned.fill(
+        child: AspectRatio(
+          aspectRatio: _cameraController.value.aspectRatio,
+          child: CameraPreview(_cameraController),
+        ),
+      );
+    }
+    return const Center(child: CircularProgressIndicator());
+  }
+
+  @override
+  void dispose() async {
     super.dispose();
+    await _cameraController.dispose();
+    WidgetsBinding.instance.removeObserver(this);
   }
 
   @override
@@ -50,7 +119,9 @@ class _DrawingPhaseState extends State<DrawingPhase> {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          _renderCameraPreview(),
+          imagePath != null
+              ? Image.file(File(imagePath!))
+              : _renderCameraPreview(),
           Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -61,17 +132,36 @@ class _DrawingPhaseState extends State<DrawingPhase> {
               Container(
                   alignment: Alignment.bottomCenter,
                   margin: const EdgeInsets.only(bottom: 20),
-                  child: IconButton.outlined(
-                      onPressed: () {},
-                      iconSize: 32,
-                      padding: const EdgeInsets.all(15),
-                      icon: const Icon(
-                        Icons.camera_alt_outlined,
-                        color: Colors.white,
-                      )))
+                  child: imagePath != null
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            IconButton.filled(
+                                onPressed: () => _acceptImage(),
+                                icon: const Icon(Icons.check)),
+                            const SizedBox(
+                              width: 20,
+                            ),
+                            IconButton.outlined(
+                                onPressed: () async {
+                                  await _initializeControllerFuture;
+                                  setState(() {
+                                    imagePath = null;
+                                  });
+                                },
+                                icon: const Icon(Icons.replay)),
+                          ],
+                        )
+                      : IconButton.outlined(
+                          onPressed: () => _makePhoto(),
+                          iconSize: 32,
+                          padding: const EdgeInsets.all(15),
+                          icon: const Icon(
+                            Icons.camera_alt_outlined,
+                            color: Colors.white,
+                          )))
             ],
           )
-
         ],
       ),
     );
