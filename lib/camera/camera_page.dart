@@ -1,4 +1,3 @@
-import 'package:camera/camera.dart';
 import 'package:drawing_trainer/app_bar/app_bar_widget.dart';
 import 'package:drawing_trainer/camera/drawing_phase.dart';
 import 'package:drawing_trainer/camera/drawing_response.dart';
@@ -37,14 +36,12 @@ class _CameraPageState extends State<CameraPage>  {
   void _setImagePath(String imagePath){
     setState(() {
       this.imagePath = imagePath;
-      print(imagePath);
     });
   }
   void _setDrawingResponse(DrawingResponse drawingResponse){
     setState(() {
       this.drawingResponse = drawingResponse;
       phase = 'result';
-      print("---------" + drawingResponse.toString() + phase);
     });
   }
   void _restart(){

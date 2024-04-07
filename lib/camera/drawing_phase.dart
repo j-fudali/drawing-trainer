@@ -4,10 +4,11 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:drawing_trainer/camera/drawing_response.dart';
-import 'package:drawing_trainer/camera/drawing_result.dart';
+import 'package:drawing_trainer/util/firebase_utils.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DrawingPhase extends StatefulWidget {
   final String generatedObject;
@@ -32,6 +33,7 @@ class _DrawingPhaseState extends State<DrawingPhase>
   bool cameraInitialized = false;
   String? imagePath;
   String? imageName;
+  bool loadingResult = false;
 
   void _makePhoto() async {
     try {
@@ -48,22 +50,38 @@ class _DrawingPhaseState extends State<DrawingPhase>
     }
   }
 
+
   void _acceptImage() async {
     try {
+      setState(() {
+        loadingResult = true;
+      });
       final imagesRef = storageRef.child("images/${widget.generatedObject + DateTime.now().microsecond.toString()}.jpg");
       var gsFile = await imagesRef.putFile(File(imagePath!), SettableMetadata(contentType: 'image/jpeg'));
       final fileUrl = dotenv.env["IMAGES_STORAGE"]! + gsFile.ref.fullPath;
+      final publicUrl = await imagesRef.getDownloadURL();
       final prompt = 'Return JSON object where: "isValid" contains true or false, if image shows a drawing of ${widget.generatedObject}, "rate" containing rate from 0 to 100 of quality of drawing, "tips" containing array of up to 3 tips that author of drawing can improve in this drawing. Example of returned object: {"isValid":true, "rate": 60, "tips": ["text...", "text...", "text.."]}.';
       final docRef = await ref.add({"prompt": prompt, "image": fileUrl});
+      final prefs = await SharedPreferences.getInstance();
+      var history = prefs.getStringList('history');
+      if(history != null) {
+        history.add(docRef.id);
+      } else {
+        history = [docRef.id];
+      }
+      await prefs.setStringList('history', history);
       docRef.snapshots().listen((event) {
         var output = event.data()!['output'] as String?;
         if (output != null) {
-          final response = output.substring(8, output.length - 3);
-          final drawingResponseMap = jsonDecode(response) as Map<String, dynamic>;
+          setState(() {
+            loadingResult = false;
+          });
+          final drawingResponseMap = FirebaseUtils.getJsonFromOutput(output);
           final drawingResponse = DrawingResponse.fromJson(drawingResponseMap);
           widget.setDrawingResponse(drawingResponse);
         }
       });
+      await docRef.update({"object": widget.generatedObject, "publicImage": publicUrl});
     } on FirebaseException catch (e) {
       print(e);
     }
@@ -120,7 +138,12 @@ class _DrawingPhaseState extends State<DrawingPhase>
         clipBehavior: Clip.none,
         children: [
           imagePath != null
-              ? Image.file(File(imagePath!))
+              ? Image.file(File(imagePath!),
+            alignment: Alignment.center,
+            height: double.infinity,
+            width: double.infinity,
+            fit: BoxFit.cover,
+          )
               : _renderCameraPreview(),
           Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -133,7 +156,7 @@ class _DrawingPhaseState extends State<DrawingPhase>
                   alignment: Alignment.bottomCenter,
                   margin: const EdgeInsets.only(bottom: 20),
                   child: imagePath != null
-                      ? Row(
+                      ? loadingResult ? const CircularProgressIndicator() :Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             IconButton.filled(
