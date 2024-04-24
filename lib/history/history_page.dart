@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class HistoryPage extends StatefulWidget{
   const HistoryPage({super.key});
@@ -23,7 +24,7 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AppBarWidget(title: "History"),
+      appBar: AppBarWidget(title: AppLocalizations.of(context)!.history),
       body: _renderBody()
     );
   }
@@ -34,14 +35,13 @@ class _HistoryPageState extends State<HistoryPage> {
             return const Center(child: CircularProgressIndicator());
           }
           else if (snapshot.hasError){
-            print(snapshot.error);
-            return const Center(child: Text('Something went wrong'),);
+            return Center(child: Text(AppLocalizations.of(context)!.error),);
           }
           else{
             return ListView.builder(itemCount: snapshot.data!.length, itemBuilder: (context, index) => snapshot.data![index]);
           }
         })
-        : const Center(child: Text("No history yet", style: TextStyle(fontSize: 24),));
+        : Center(child: Text(AppLocalizations.of(context)!.noHistory, style: const TextStyle(fontSize: 24),));
   }
   void _initHistory () async {
     final prefs = await SharedPreferences.getInstance();
@@ -74,7 +74,7 @@ class _HistoryPageState extends State<HistoryPage> {
         imageBuilder: (context, imageProvider) => CircleAvatar(backgroundImage: imageProvider,),
         progressIndicatorBuilder: (context, url, downloadProgress)
         => CircularProgressIndicator(value: downloadProgress.progress));
-    final objectName = doc.get('object');
+    final objectName = doc.get('object') as String;
     final status = doc.get('status') as Map<String, dynamic>;
     final timestamp = status['completeTime'] as Timestamp;
     final date = timestamp.toDate();
@@ -83,7 +83,7 @@ class _HistoryPageState extends State<HistoryPage> {
     final drawingResponseMap = FirebaseUtils.getJsonFromOutput(output);
     final drawingResponse = DrawingResponse.fromJson(drawingResponseMap);
     return ListTile(leading: avatar,
-      title: Text(objectName),
+      title: Text(objectName[0].toUpperCase() + objectName.substring(1).toLowerCase()),
       subtitle: Text(dateFormatted),
       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) =>
           HistoryDetails(objectName: objectName, objectImage: objectImage, drawingResponse: drawingResponse,))),

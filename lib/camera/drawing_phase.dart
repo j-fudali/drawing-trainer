@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
@@ -9,6 +8,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class DrawingPhase extends StatefulWidget {
   final String generatedObject;
@@ -60,7 +60,7 @@ class _DrawingPhaseState extends State<DrawingPhase>
       var gsFile = await imagesRef.putFile(File(imagePath!), SettableMetadata(contentType: 'image/jpeg'));
       final fileUrl = dotenv.env["IMAGES_STORAGE"]! + gsFile.ref.fullPath;
       final publicUrl = await imagesRef.getDownloadURL();
-      final prompt = 'Return JSON object where: "isValid" contains true or false, if image shows a drawing of ${widget.generatedObject}, "rate" containing rate from 0 to 100 of quality of drawing, "tips" containing array of up to 3 tips that author of drawing can improve in this drawing. Example of returned object: {"isValid":true, "rate": 60, "tips": ["text...", "text...", "text.."]}.';
+      final prompt = AppLocalizations.of(context)!.resultsPrompt(widget.generatedObject);
       final docRef = await ref.add({"prompt": prompt, "image": fileUrl});
       final prefs = await SharedPreferences.getInstance();
       var history = prefs.getStringList('history');
@@ -89,7 +89,6 @@ class _DrawingPhaseState extends State<DrawingPhase>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // App state changed before we got the chance to initialize.
     if (!_cameraController.value.isInitialized) {
       return;
     }
@@ -107,16 +106,18 @@ class _DrawingPhaseState extends State<DrawingPhase>
     _initializeControllerFuture = _cameraController.initialize();
     await _initializeControllerFuture;
     await _cameraController.setFlashMode(FlashMode.off);
-    if (mounted) {
-      setState(() => cameraInitialized = true);
+    if (!mounted) {
+      return;
     }
+      setState(() => cameraInitialized = true);
   }
 
   Widget _renderCameraPreview() {
     if (cameraInitialized) {
       return Positioned.fill(
-        child: AspectRatio(
-          aspectRatio: _cameraController.value.aspectRatio,
+        child:
+        AspectRatio(
+          aspectRatio: _cameraController.value.aspectRatio ,
           child: CameraPreview(_cameraController),
         ),
       );
@@ -150,7 +151,7 @@ class _DrawingPhaseState extends State<DrawingPhase>
             children: [
               Container(
                 margin: const EdgeInsets.only(top: 20),
-                child: Chip(label: Text(widget.generatedObject)),
+                child: Chip(label: Text(widget.generatedObject[0].toUpperCase()+widget.generatedObject.substring(1).toLowerCase() )),
               ),
               Container(
                   alignment: Alignment.bottomCenter,

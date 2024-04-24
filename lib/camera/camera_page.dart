@@ -4,7 +4,7 @@ import 'package:drawing_trainer/camera/drawing_response.dart';
 import 'package:drawing_trainer/camera/drawing_result.dart';
 import 'package:drawing_trainer/camera/generating_phase.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class CameraPage extends StatefulWidget {
   const CameraPage({super.key});
 
@@ -14,7 +14,6 @@ class CameraPage extends StatefulWidget {
 }
 
 class _CameraPageState extends State<CameraPage>  {
-  String appBarTitle = "Drawing Trainer";
 
   String phase = 'generating';
   late String generatedObject;
@@ -65,7 +64,7 @@ class _CameraPageState extends State<CameraPage>  {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBarWidget(title: appBarTitle),
+      appBar: AppBarWidget(title: AppLocalizations.of(context)!.appTitle),
       body: _renderBody(),
     );
   }

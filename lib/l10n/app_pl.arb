@@ -1,0 +1,24 @@
+{
+  "appTitle": "Trener rysunku",
+  "trainer": "Trener",
+  "history": "Historia",
+  "generate": "Generuj",
+  "generateText": "Przygotuj ołówek i papier",
+  "generatedObjectText": "Wygenerowany obiekt to:",
+  "startDrawing": "Zacznij rysować",
+  "restart": "Ponów",
+  "historyUpperTextCorrect": "To jest rysunek obiektu",
+  "historyUpperTextWrong": "To jest nie rysunek obiektu",
+  "generateObjectPrompt": "Wylosuj dowolony jeden obiekt rzeczywisty, któy można narysować. Podaj samą nazwę.",
+  "resultsPrompt": "Zwróć obiekt JSON gdzie: \"isValid\" zawiera true lub false, jeżeli zdjęcie pokazuje rysunek przedstawiający {generatedObject}, \"rate\" zawierający ocenę w skali od 0 do 100 pod względem jakości rysunku, \"tips\" zawiera tablicę(array) maksymalnie 3 podpowiedzi, które autor rysunku może zastosować, aby rysunek był lepszy. Przykład zwracanego obiektu: '{\"isValid\":true, \"rate\": 60, \"tips\": [\"text...\", \"text..\", \"text..\"]}'",
+  "@resultsPrompt": {
+    "placeholders": {
+      "generatedObject": {
+        "type": "String",
+        "example": "Chmura"
+      }
+    }
+  },
+  "noHistory": "Brak historii",
+  "error": "Coś poszło nie tak"
+}

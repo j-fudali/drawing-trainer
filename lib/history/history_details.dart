@@ -1,7 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:drawing_trainer/app_bar/app_bar_widget.dart';
 import 'package:drawing_trainer/camera/drawing_response.dart';
+import 'package:drawing_trainer/shared/tips_list.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class HistoryDetails extends StatelessWidget {
   final String objectImage;
@@ -17,12 +19,12 @@ class HistoryDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBarWidget(
-          title:objectName,
+          title:objectName[0].toUpperCase()+objectName.substring(1).toLowerCase(),
         ),
-        body: _renderBody());
+        body: _renderBody(context));
   }
 
-  Widget _renderBody() {
+  Widget _renderBody(BuildContext context) {
     return Stack(
       children: [
         CachedNetworkImage(
@@ -42,7 +44,7 @@ class HistoryDetails extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("This is ${drawingResponse.isValid ? "" : "not "}a drawing of ${objectName.toLowerCase()}",
+                    Text("${drawingResponse.isValid ? AppLocalizations.of(context)!.historyUpperTextCorrect : AppLocalizations.of(context)!.historyUpperTextWrong} ${objectName.toLowerCase()}",
                       style: const TextStyle(color: Colors.white, fontSize: 16),),
                     Icon(drawingResponse.isValid ? Icons.done : Icons.close, color: Colors.white,),
                   ],
@@ -71,30 +73,10 @@ class HistoryDetails extends StatelessWidget {
                 ),
               ],
             ),
-            Column(
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: _renderTips(),
-                ),
-              ],
-            )
+            TipsList(drawingResponse: drawingResponse)
           ],
         )
       ],
     );
-  }
-
-  List<Widget> _renderTips() {
-    return drawingResponse.tips!
-        .map((e) => Card(
-              elevation: 3,
-              margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-              child: Container(
-                padding: const EdgeInsets.all(10),
-                child: Text(e),
-              ),
-            ))
-        .toList();
   }
 }

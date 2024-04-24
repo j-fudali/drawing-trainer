@@ -1,0 +1,27 @@
+{
+  "appTitle": "Drawing Trainer",
+  "@appTitle": {
+    "description": "Main application title"
+  },
+  "trainer": "Trainer",
+  "history": "History",
+  "generate": "Generate",
+  "generateText": "Prepare pencil and paper to draw",
+  "generatedObjectText": "Generated object is:",
+  "startDrawing": "Start drawing",
+  "restart": "Restart",
+  "historyUpperTextCorrect": "This is a drawing of",
+  "historyUpperTextWrong": "This is not a drawing of",
+  "generateObjectPrompt": "Return a one random object from world that can be drawn. It can be anything. Response in english.",
+  "resultsPrompt": "Return JSON object where: \"isValid\" contains true or false, if image shows a drawing of {generatedObject}, \"rate\" containing rate from 0 to 100 of quality of drawing, \"tips\" containing array of up to 3 tips that author of drawing can improve in this drawing. Example of returned object: '{\"isValid\":true, \"rate\": 60, \"tips\": [\"text...\", \"text..\", \"text..\"]}'",
+  "@resultsPrompt": {
+    "placeholders": {
+      "generatedObject": {
+        "type": "String",
+        "example": "Cloud"
+      }
+    }
+  },
+  "noHistory": "No history yet",
+  "error": "Something went wrong"
+}

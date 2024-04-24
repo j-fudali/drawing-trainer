@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:drawing_trainer/camera/drawing_response.dart';
+import 'package:drawing_trainer/shared/tips_list.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class DrawingResult extends StatelessWidget {
   final DrawingResponse drawingResponse;
@@ -38,12 +40,12 @@ class DrawingResult extends StatelessWidget {
                           restart();
                         },
                             icon: const Icon(Icons.restart_alt),
-                            label: const Text("Restart")
+                            label: Text(AppLocalizations.of(context)!.restart)
                         ),
                       ),
                       Chip(
                         avatar: Icon(drawingResponse.isValid ? Icons.done : Icons.close),
-                        label: Text(objectName),
+                        label: Text(objectName[0].toUpperCase()+objectName.substring(1).toLowerCase()),
                       ),
                       const SizedBox(height: 10,),
                       RichText(
@@ -59,15 +61,7 @@ class DrawingResult extends StatelessWidget {
                     ],
                   ),
                 ),
-                Column(
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: _renderTips()
-                      ,
-                    ),
-                  ],
-                )
+                TipsList(drawingResponse: drawingResponse)
               ],
             )
 
@@ -75,16 +69,6 @@ class DrawingResult extends StatelessWidget {
     );
   }
 
- List<Widget> _renderTips(){
-    return drawingResponse.tips!.map((e) => Card(
-        elevation: 3,
-        margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-        child: Container(
-          padding: const EdgeInsets.all(10),
-          child: Text(e),
-        ),
-    )
-    ).toList();
- }
+
 
 }

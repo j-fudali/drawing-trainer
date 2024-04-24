@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class GeneratingPhase extends StatefulWidget{
   final Function setPhaseToDrawing;
@@ -36,13 +37,13 @@ class _GeneratingPhaseState extends State<GeneratingPhase> {
           !isObjectGenerated
               ? FloatingActionButton.extended(
             elevation: 10,
-            onPressed: (isObjectLoading || isObjectGenerated) ? null : () => _generateObjectToDraw(),
-            label: const Text("Generate"),
+            onPressed: (isObjectLoading || isObjectGenerated) ? null : () => _generateObjectToDraw(context),
+            label: Text(AppLocalizations.of(context)!.generate),
             icon: const Icon(Icons.shuffle),
           )
               : FloatingActionButton.extended(
             onPressed: () => _startDrawingPhaser(),
-            label: const Text("Start drawing"),
+            label: Text(AppLocalizations.of(context)!.startDrawing),
             icon: const Icon(Icons.draw),
           ),
           const SizedBox(
@@ -53,10 +54,10 @@ class _GeneratingPhaseState extends State<GeneratingPhase> {
               child: Column(
                 children: <Widget>[
                   !isObjectGenerated
-                      ? const Text("Prepare pencil and paper to draw")
+                      ? Text(AppLocalizations.of(context)!.generateText)
                       : const SizedBox.shrink(),
                   isObjectGenerated
-                      ? const Text("Generated object is: ")
+                      ? Text(AppLocalizations.of(context)!.generatedObjectText)
                       : const SizedBox.shrink(),
                   const SizedBox(
                     height: 20,
@@ -69,9 +70,9 @@ class _GeneratingPhaseState extends State<GeneratingPhase> {
     );
   }
 
-  void _generateObjectToDraw() async {
-    const prompt =
-        'Return a one random object that human can draw on a piece of paper';
+  void _generateObjectToDraw(BuildContext context) async {
+    var prompt =
+        AppLocalizations.of(context)!.generateObjectPrompt;
     addedObject = await ref.add({"prompt": prompt});
     setState(() {
       isObjectLoading = true;
@@ -91,7 +92,7 @@ class _GeneratingPhaseState extends State<GeneratingPhase> {
       return const CircularProgressIndicator();
     }
     if (isObjectGenerated) {
-      return Chip(label: Text(generatedObjectToDraw));
+      return Chip(label: Text(generatedObjectToDraw[0].toUpperCase() + generatedObjectToDraw.substring(1)));
     }
     return const SizedBox.shrink();
   }
