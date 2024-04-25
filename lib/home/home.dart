@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import '../camera/camera_page.dart';
+import '../trainer/trainer_page.dart';
 import '../history/history_page.dart';
 
 class HomePage extends StatefulWidget{
@@ -13,7 +13,7 @@ class HomePage extends StatefulWidget{
 class _HomePageState extends State<HomePage> {
   int selectedPageIndex = 0;
   final screens = [
-    const CameraPage(),
+    const TrainerPage(),
     const HistoryPage()
   ];
   @override

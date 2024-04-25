@@ -1,19 +1,19 @@
 import 'package:drawing_trainer/app_bar/app_bar_widget.dart';
-import 'package:drawing_trainer/camera/drawing_phase.dart';
-import 'package:drawing_trainer/camera/drawing_response.dart';
-import 'package:drawing_trainer/camera/drawing_result.dart';
-import 'package:drawing_trainer/camera/generating_phase.dart';
+import 'package:drawing_trainer/trainer/drawing_phase.dart';
+import 'package:drawing_trainer/trainer/drawing_response.dart';
+import 'package:drawing_trainer/trainer/drawing_result.dart';
+import 'package:drawing_trainer/trainer/generating_phase.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-class CameraPage extends StatefulWidget {
-  const CameraPage({super.key});
+class TrainerPage extends StatefulWidget {
+  const TrainerPage({super.key});
 
   @override
-  State<StatefulWidget> createState() => _CameraPageState();
+  State<StatefulWidget> createState() => _TrainerPageState();
 
 }
 
-class _CameraPageState extends State<CameraPage>  {
+class _TrainerPageState extends State<TrainerPage>  {
 
   String phase = 'generating';
   late String generatedObject;

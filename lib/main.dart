@@ -14,7 +14,6 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
- await FirebaseAuth.instance.signInAnonymously();
   await dotenv.load();
   final lightThemeStr = await rootBundle.loadString('assets/theme_light.json');
   final lightThemeJson = jsonDecode(lightThemeStr);

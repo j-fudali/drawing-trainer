@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:drawing_trainer/app_bar/app_bar_widget.dart';
-import 'package:drawing_trainer/camera/drawing_response.dart';
+import 'package:drawing_trainer/trainer/drawing_response.dart';
 import 'package:drawing_trainer/history/history_details.dart';
 import 'package:drawing_trainer/util/firebase_utils.dart';
 import 'package:flutter/material.dart';

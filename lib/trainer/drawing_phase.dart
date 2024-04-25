@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:drawing_trainer/camera/drawing_response.dart';
+import 'package:drawing_trainer/trainer/drawing_response.dart';
 import 'package:drawing_trainer/util/firebase_utils.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
